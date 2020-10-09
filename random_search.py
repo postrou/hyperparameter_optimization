@@ -71,6 +71,6 @@ if __name__ == '__main__':
     print('Loading IMDB data')
     train_data, val_data, test_data = prepare_data('data/aclImdb/')
 
-    total_time, results = random_search(params_grid, trials, train_data, val_data, test_data, ft_vectors, epochs, emb_size, device)
+    total_time, results = random_search(params_grid, trials, train_data[:32], val_data[:32], test_data[:32], ft_vectors, epochs, emb_size, device)
     print(f'Total time: {total_time}')
 

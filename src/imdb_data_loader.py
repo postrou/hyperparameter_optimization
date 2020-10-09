@@ -5,11 +5,12 @@ import torch
 
 class IMDBDataLoader(object):
     
-    def __init__(self, data, batch_size, ft_vectors, seed=42):
+    def __init__(self, data, batch_size, ft_vectors, device, seed=42):
         self.rs = random.Random(seed)
         self.data = data
         self.batch_size = batch_size
         self.ft_vectors = ft_vectors
+        self.device = device
         self.emb_size = len(list(ft_vectors.values())[0])
         self.n_batches = len(data) // batch_size + 1 if len(data) % batch_size != 0 else len(data) // batch_size
         
@@ -31,7 +32,7 @@ class IMDBDataLoader(object):
                     vectors[n_t] = torch.rand(self.emb_size)
             padded_vectors_batch[i, :len(vectors), :] = vectors
             labels_batch[i] = label
-        return [padded_vectors_batch, labels_batch, lengths]
+        return (padded_vectors_batch.to(self.device), lengths.to(self.device)), labels_batch.to(self.device)
         
     def __len__(self):
         return self.n_batches
