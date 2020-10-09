@@ -36,7 +36,6 @@ def random_search(params_grid, trials, train_data, val_data, test_data, ft_vecto
         checkpoints_dir = os.path.join(checkpoints_dir, '_'.join(map(str, params)))    
         if not os.path.isdir(checkpoints_dir):
             os.mkdir(checkpoints_dir)
-        elif os.path.exists(checkpoints_dir):
         
         model, fin_val_loss, fin_val_acc = train_model(params_dict, train_data, val_data, ft_vectors, epochs, emb_size, device, checkpoints_dir, 100)
         if model is None and fin_val_loss is None and fin_val_acc is None:
