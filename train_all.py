@@ -26,7 +26,7 @@ def train_all(params_grid, train_data, val_data, test_data, ft_vectors, epochs, 
             'batch_size': int(params[4]),
             'lr': params[5],
         }
-        print(f'Trials [{i + 1}/216], {params_dict}')
+        print(f'Trials [{i + 1}/{len(all_params)}], {params_dict}')
         if not os.path.isdir('checkpoints'):
             os.mkdir('checkpoints')
         checkpoints_dir = os.path.join('checkpoints', 'models')
@@ -46,7 +46,7 @@ def train_all(params_grid, train_data, val_data, test_data, ft_vectors, epochs, 
         _, test_loss, test_acc = test_model(model, params_dict['batch_size'], test_data, ft_vectors, device, checkpoints_dir)
         
         time_per_trial = int(time.time() - trial_start_time)
-        print(f'Trials [{i + 1}/216], test loss: {test_loss}, test accuracy: {test_acc}, time per trial: {time_per_trial}s', end='\n\n')
+        print(f'Trials [{i + 1}/{len(all_params)}], test loss: {test_loss}, test accuracy: {test_acc}, time per trial: {time_per_trial}s', end='\n\n')
         
         results.append((params, fin_val_loss, fin_val_acc, test_loss, test_acc))
     total_time = int(time.time() - start_time)
