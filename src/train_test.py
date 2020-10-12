@@ -80,7 +80,8 @@ def train_model(params, train_data, val_data, ft_vectors, n_epoch, emb_size, dev
             val_accuracy = float(val_accuracy) / n
             val_loss = float(val_loss) / len(val_data_loader)
             
-            print(f'Epoch [{epoch + 1}/{n_epoch}], train loss: {train_loss}, train accuracy: {train_accuracy}, val loss: {val_loss}, val accuracy: {val_accuracy}')
+            epoch_time = time.time() - start_time
+            print(f'Epoch [{epoch + 1}/{n_epoch}], epoch time: {epoch_time} train loss: {train_loss}, train accuracy: {train_accuracy}, val loss: {val_loss}, val accuracy: {val_accuracy}')
 #             log_f.write(f'Epoch [{epoch + 1}/{n_epoch}], val loss: {val_loss}, val accuracy: {val_accuracy}\n')
             if val_loss < eps:
                 break
@@ -88,7 +89,7 @@ def train_model(params, train_data, val_data, ft_vectors, n_epoch, emb_size, dev
         checkpoint_path = os.path.join(checkpoints_dir, '.'.join([str(epoch + 1), 'pt']))
         torch.save(model.state_dict, checkpoint_path)
         results_f.write({'epoch': epoch + 1, 
-                         'time': time.time() - start_time, 
+                         'time': epoch_time, 
                          'val_loss': val_loss, 
                          'val_accuracy': val_accuracy, 
                          'train_loss': train_loss, 
