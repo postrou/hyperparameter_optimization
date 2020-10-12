@@ -15,9 +15,9 @@ def train_all(params_grid, train_data, val_data, test_data, ft_vectors, epochs, 
     rs = random.Random(seed)
     results = []
     start_time = time.time()
-    total_time = 0
     all_params = list(product(*params_grid.values()))
     for i, params in enumerate(all_params):
+        trial_start_time = time.time()
         params_dict = {
             'hidden_size': int(params[0]),
             'num_layers': int(params[1]),
@@ -35,6 +35,9 @@ def train_all(params_grid, train_data, val_data, test_data, ft_vectors, epochs, 
         checkpoints_dir = os.path.join(checkpoints_dir, '_'.join(map(str, params)))    
         if not os.path.isdir(checkpoints_dir):
             os.mkdir(checkpoints_dir)
+        else:
+            print('Already exists, skipping')
+            continue
         
         model, fin_val_loss, fin_val_acc = train_model(params_dict, train_data, val_data, ft_vectors, epochs, emb_size, device, checkpoints_dir, 100)
         if model is None and fin_val_loss is None and fin_val_acc is None:
@@ -42,10 +45,11 @@ def train_all(params_grid, train_data, val_data, test_data, ft_vectors, epochs, 
             continue
         _, test_loss, test_acc = test_model(model, params_dict['batch_size'], test_data, ft_vectors, device, checkpoints_dir)
         
-        print(f'Trials [{i + 1}/216], test loss: {test_loss}, test accuracy: {test_acc}', end='\n\n')
+        time_per_trial = int(time.time() - trial_start_time)
+        print(f'Trials [{i + 1}/216], test loss: {test_loss}, test accuracy: {test_acc}, time per trial: {time_per_trial}s', end='\n\n')
         
         results.append((params, fin_val_loss, fin_val_acc, test_loss, test_acc))
-        total_time += time.time() - start_time
+    total_time = int(time.time() - start_time)
         
     return total_time, results
 
@@ -57,9 +61,9 @@ if __name__ == '__main__':
     params_grid = {
         'hidden_size': [64, 128, 256],
         'num_layers': np.array([1, 2]),
-        'dropout': np.array([0, 0.5]),
+        'dropout': np.array([0.5]),
         'bidirectional': np.array([True, False]),
-        'batch_size': np.array([64, 128, 256]),
+        'batch_size': np.array([64, 256]),
         'lr': [1e-3, 1e-2, 1e-1]
     }
 
