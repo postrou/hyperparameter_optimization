@@ -68,6 +68,8 @@ def train_model(params, train_data, val_data, ft_vectors, n_epoch, emb_size, dev
             val_loss = 0
             n = 0
             for X_batch, y_batch in val_data_loader:
+                if device == 'cuda':
+                    torch.cuda.empty_cache()
                 output = model(X_batch)
                 loss = F.cross_entropy(output, y_batch)
                 val_loss += loss.item()
