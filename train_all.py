@@ -7,11 +7,11 @@ import sys
 import numpy as np
 import torch
 
-from src.train_test import train_model, test_model
+from src.train_test import train, test
 from src.load_data import load_vectors, prepare_data
 
 
-def train_all(params_grid, train_data, val_data, test_data, ft_vectors, epochs, emb_size, device, seed=42):
+def train_all(params_grid, train_data, val_data, test_data, ft_vectors, epochs, device, seed=42):
     rs = random.Random(seed)
     results = []
     start_time = time.time()
@@ -39,11 +39,11 @@ def train_all(params_grid, train_data, val_data, test_data, ft_vectors, epochs, 
             print('Already exists, skipping')
             continue
         
-        model, fin_val_loss, fin_val_acc = train_model(params_dict, train_data, val_data, ft_vectors, epochs, emb_size, device, checkpoints_dir, 100)
+        model, fin_val_loss, fin_val_acc = train(params_dict, train_data, val_data, ft_vectors, epochs, device, checkpoints_dir)
         if model is None and fin_val_loss is None and fin_val_acc is None:
             print('Loss is None, bad trial!', end='\n\n')
             continue
-        _, test_loss, test_acc = test_model(model, params_dict['batch_size'], test_data, ft_vectors, device, checkpoints_dir)
+        _, test_loss, test_acc = test(model, params_dict['batch_size'], test_data, ft_vectors, device, checkpoints_dir)
         
         time_per_trial = int(time.time() - trial_start_time)
         print(f'Trials [{i + 1}/{len(all_params)}], test loss: {test_loss}, test accuracy: {test_acc}, time per trial: {time_per_trial}s', end='\n\n')
@@ -59,8 +59,8 @@ if __name__ == '__main__':
     epochs = int(epochs)
 
     params_grid = {
-        'hidden_size': [64, 128, 256],
-        'num_layers': np.array([1, 2]),
+        'hidden_size': [64, 128, 256, 512, 1024],
+        'num_layers': np.array([1, 2, 3]),
         'dropout': np.array([0.5]),
         'bidirectional': np.array([True, False]),
         'batch_size': np.array([64, 256]),
@@ -69,10 +69,9 @@ if __name__ == '__main__':
 
     print('Loading fasttext vectors')
     ft_vectors = load_vectors('wiki-news-300d-1M.vec')
-    emb_size = len(list(ft_vectors.values())[0])
     print('Loading IMDB data')
     train_data, val_data, test_data = prepare_data('data/aclImdb/')
 
-    total_time, results = train_all(params_grid, train_data, val_data, test_data, ft_vectors, epochs, emb_size, device)
+    total_time, results = train_all(params_grid, train_data, val_data, test_data, ft_vectors, epochs, device)
     print(f'Total time: {total_time}')
 

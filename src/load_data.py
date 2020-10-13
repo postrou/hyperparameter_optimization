@@ -48,3 +48,4 @@ def prepare_data(data_path):
     random.shuffle(val_data)
     random.shuffle(test_data)
     return train_data, val_data, test_data
+
