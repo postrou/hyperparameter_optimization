@@ -59,8 +59,8 @@ if __name__ == '__main__':
     epochs = int(epochs)
 
     params_grid = {
-        'hidden_size': [64, 128, 256, 512, 1024],
-        'num_layers': np.array([1, 2, 3]),
+        'hidden_size': [64, 128, 256, 512],
+        'num_layers': np.array([1, 2]),
         'dropout': np.array([0.5]),
         'bidirectional': np.array([True, False]),
         'batch_size': np.array([64, 256]),
