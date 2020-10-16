@@ -51,7 +51,7 @@ class OptunaOptimizer(HyperparamOptimizer):
 
         obj = partial(self.objective, checkpoints_dir, i_epoch, params_grid)
         study = optuna.create_study(direction='maximize')
-        study.optimize(obj, n_trials=self.max_iters)
+        study.optimize(obj, n_trials=self.max_iters, show_progress_bar=True)
 
         best_trial_id = study.best_trial.number
         self.n_iters = len(study.trials)
