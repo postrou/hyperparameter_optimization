@@ -14,6 +14,7 @@ from .lstm_model import LSTMModel
 def eval_epoch(model, data_loader, device):
     with torch.no_grad():
         model.eval()
+        model.to(device)
         eval_accuracy = 0
         eval_loss = 0
         n = 0
@@ -81,6 +82,14 @@ def train(params, train_data, val_data, ft_vectors, n_epoch, device, checkpoints
         # train epoch
         train_loss, train_accuracy = train_epoch(model, opt, data_loader, device)
         if train_loss is None and train_accuracy is None:
+            epoch_time = time.time() - start_time
+            results_f.write({'epoch': epoch + 1, 
+                             'time': epoch_time, 
+                             'val_loss': -1, 
+                             'val_accuracy': -1, 
+                             'train_loss': -1, 
+                             'train_accuracy': -1})
+            results_f.close()
             return None, None, None
         
         # validation epoch
@@ -104,6 +113,7 @@ def train(params, train_data, val_data, ft_vectors, n_epoch, device, checkpoints
     return model, val_loss, val_accuracy
 
 def test(model, batch_size, test_data, ft_vectors, device, checkpoints_dir):
+    start_time = time.time()
     results_path = os.path.join(checkpoints_dir, '.'.join(['test_result', 'jsonl']))
     results_f = jsonl.open(results_path, 'w')
     
@@ -113,7 +123,8 @@ def test(model, batch_size, test_data, ft_vectors, device, checkpoints_dir):
 
     test_loss, test_accuracy = eval_epoch(model, data_loader, device)
     results_f.write({'test_loss': test_loss, 
-                     'test_accuracy': test_accuracy})
+                     'test_accuracy': test_accuracy,
+                     'test_time': time.time() - start_time})
     
     results_f.close()
     return model, test_loss, test_accuracy
