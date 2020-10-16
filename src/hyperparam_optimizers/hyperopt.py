@@ -33,7 +33,7 @@ class HyperoptOptimizer(HyperparamOptimizer):
             return {
                 'status': STATUS_FAIL,
                 'loss': None,
-                'accuracy': None,
+                'cross_entropy': None,
                 'params': params,
                 'train_time': train_time
             }
@@ -44,10 +44,11 @@ class HyperoptOptimizer(HyperparamOptimizer):
             
         self.params_track.append(params)
 
+        # here loss is (1 - accuracy), because hyperopt triggers on "loss" variable, during optimization
         return {
             'status': STATUS_OK,
-            'loss': test_loss,
-            'accuracy': test_accuracy,
+            'loss': 1 - test_accuracy,
+            'cross_entropy': test_loss,
             'params': params,
             'train_time': train_time + test_time
         }
@@ -80,11 +81,11 @@ class HyperoptOptimizer(HyperparamOptimizer):
         for t in trials.results:
             full_train_time += t['train_time']
             if t['status'] == 'ok':
-                self.loss_track.append(t['loss'])
-                self.accuracy_track.append(t['accuracy'])
+                self.loss_track.append(t['cross_entropy'])
+                self.accuracy_track.append(1 - t['loss'])
                 
         self.total_time = time.time() - start_time + full_train_time
-        self.best_loss = trials.best_trial['result']['loss']
-        self.best_accuracy = trials.best_trial['result']['accuracy']
+        self.best_loss = trials.best_trial['result']['cross_entropy']
+        self.best_accuracy = 1 - trials.best_trial['result']['loss']
         self.best_params = trials.best_trial['result']['params']
 

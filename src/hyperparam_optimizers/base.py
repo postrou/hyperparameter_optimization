@@ -80,7 +80,7 @@ class HyperparamOptimizer(object):
             self.loss_track.append(test_loss)
             self.accuracy_track.append(test_accuracy)
             
-            if test_loss < self.best_loss:
+            if test_accuracy > self.best_accuracy:
                 self.best_loss = test_loss
                 self.best_accuracy = test_accuracy
                 self.best_params = params

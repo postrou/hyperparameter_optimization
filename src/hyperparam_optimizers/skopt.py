@@ -44,12 +44,12 @@ class SkoptOptimizer(HyperparamOptimizer):
         self.accuracy_track.append(test_accuracy)
         self.total_time += test_time
         
-        if test_loss < self.best_loss:
+        if test_accuracy > self.best_accuracy:
             self.best_loss = test_loss
             self.best_accuracy = test_accuracy
             self.best_params = params
             
-        return test_loss
+        return 1 - test_accuracy
 
 
     def optimize(self, checkpoints_dir, params_grid, i_epoch):
@@ -67,5 +67,5 @@ class SkoptOptimizer(HyperparamOptimizer):
         obj = partial(self.objective, checkpoints_dir, i_epoch)
         res_gp = gp_minimize(obj, space, n_calls=self.max_iters, random_state=42)
         self.total_time += time.time() - start_time
-        assert self.best_loss == res_gp['fun']
+        assert self.best_accuracy == 1 - res_gp['fun']
 
