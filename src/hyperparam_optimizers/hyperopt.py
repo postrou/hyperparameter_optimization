@@ -22,14 +22,14 @@ class HyperoptOptimizer(HyperparamOptimizer):
                   params['learning_rate']]
         ch_dir = os.path.join(checkpoints_dir, 'models', '_'.join(map(str, params)))
 
-        # getting training time
-        train_time = self.checkpoint_train_time(ch_dir, i_epoch)
+        # getting training time and quality
+        val_loss, val_accuracy, train_time = self.checkpoint_train_time_and_quality(ch_dir, i_epoch)
         # if we've already checked this point
         if params in self.params_track:
             train_time = 0
+        self.params_track.append(params)
         
-        test_loss, test_accuracy, test_time = self.test_results(ch_dir, i_epoch)
-        if test_loss is None and test_accuracy is None and test_time is None:
+        if val_loss is None and val_accuracy is None:
             return {
                 'status': STATUS_FAIL,
                 'loss': None,
@@ -38,19 +38,13 @@ class HyperoptOptimizer(HyperparamOptimizer):
                 'train_time': train_time
             }
         
-        # if we've already checked this point
-        if params in self.params_track:
-            test_time = 0
-            
-        self.params_track.append(params)
-
         # here loss is (1 - accuracy), because hyperopt triggers on "loss" variable, during optimization
         return {
             'status': STATUS_OK,
-            'loss': 1 - test_accuracy,
-            'cross_entropy': test_loss,
+            'loss': 1 - val_accuracy,
+            'cross_entropy': val_loss,
             'params': params,
-            'train_time': train_time + test_time
+            'train_time': train_time
         }
 
     def optimize(self, checkpoints_dir, params_grid, i_epoch):
@@ -65,8 +59,6 @@ class HyperoptOptimizer(HyperparamOptimizer):
                 'learning_rate': hp.choice('lr', params_grid['lr'])
             }
         ])
-        full_train_time = 0
-        
         trials = Trials()
         obj = partial(self.objective, checkpoints_dir, i_epoch)
         best = fmin(
@@ -79,13 +71,15 @@ class HyperoptOptimizer(HyperparamOptimizer):
         
         self.n_iters = len(trials.results)
         for t in trials.results:
-            full_train_time += t['train_time']
-            if t['status'] == 'ok':
-                self.loss_track.append(t['cross_entropy'])
-                self.accuracy_track.append(1 - t['loss'])
+            self.total_time += t['train_time']
+            self.loss_track.append(t['cross_entropy'])
+            self.accuracy_track.append(1 - t['loss'] if t['loss'] is not None else None)
                 
-        self.total_time = time.time() - start_time + full_train_time
         self.best_loss = trials.best_trial['result']['cross_entropy']
         self.best_accuracy = 1 - trials.best_trial['result']['loss']
         self.best_params = trials.best_trial['result']['params']
+
+        best_ch_dir = os.path.join(checkpoints_dir, 'models', '_'.join(map(str, self.best_params)))
+        self.test_loss, self.test_accuracy, test_time = self.test_results(best_ch_dir)
+        self.total_time += time.time() - start_time + test_time
 

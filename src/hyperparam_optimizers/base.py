@@ -14,6 +14,8 @@ class HyperparamOptimizer(object):
         self.best_params = ()
         self.best_accuracy = 0
         self.best_loss = 100
+        self.test_accuracy = 0
+        self.test_loss = 100
         self.total_time = 0
         self.loss_track = []
         self.accuracy_track = []
@@ -26,17 +28,21 @@ class HyperparamOptimizer(object):
     def __len__(self):
         return self.n_iters
         
-    def checkpoint_train_time(self, ch_dir, i_epoch):
+    def checkpoint_train_time_and_quality(self, ch_dir, i_epoch):
         train_result_path = os.path.join(ch_dir, '.'.join(['train_result', 'jsonl']))
+        if not os.path.exists(os.path.join(ch_dir, f'{i_epoch}.pt')):
+            val_loss, val_accuracy = None, None
         with jsonl.open(train_result_path) as reader:
             train_time = 0
             for obj in reader:
                 train_time += float(obj['time'])
                 if int(obj['epoch']) == i_epoch:
+                    val_loss = obj['val_loss']
+                    val_accuracy = obj['val_accuracy']
                     break
-        return train_time
+        return val_loss, val_accuracy, train_time
     
-    def test_results(self, ch_dir, i_epoch=20):
+    def test_results(self, ch_dir):
         test_result_path = os.path.join(ch_dir, f'test_result.jsonl')
         if not os.path.exists(test_result_path):
             return None, None, None
@@ -56,33 +62,29 @@ class HyperparamOptimizer(object):
     def optimize(self, checkpoints_dir, params_grid, i_epoch):
         start_time = time.time()
         all_params = list(product(*params_grid.values()))
-        full_train_time = 0
         for params in self.next_params(all_params):
             ch_dir = os.path.join(checkpoints_dir, 'models', '_'.join(map(str, params)))
             
-            # getting training time
-            train_time = self.checkpoint_train_time(ch_dir, i_epoch)
+            # getting training time and validation quality
+            val_loss, val_accuracy, train_time = self.checkpoint_train_time_and_quality(ch_dir, i_epoch)
             if params in self.params_track:
                 train_time = 0
-            full_train_time += train_time
-            
-            # getting test results
-            test_loss, test_accuracy, test_time = self.test_results(ch_dir, i_epoch)
-            if test_loss is None and test_accuracy is None and test_time is None:
-                continue
-            
-            if params in self.params_track:
-                test_time = 0
-            full_train_time += test_time
-            
+            self.total_time += train_time
+
             # keeping track of results
             self.params_track.append(params)
-            self.loss_track.append(test_loss)
-            self.accuracy_track.append(test_accuracy)
+            self.loss_track.append(val_loss)
+            self.accuracy_track.append(val_accuracy)
             
-            if test_accuracy > self.best_accuracy:
-                self.best_loss = test_loss
-                self.best_accuracy = test_accuracy
+            if val_loss is None and val_accuracy is None:
+                continue
+
+            if val_accuracy > self.best_accuracy:
+                self.best_loss = val_loss
+                self.best_accuracy = val_accuracy
                 self.best_params = params
-        self.total_time = time.time() - start_time + full_train_time
+
+        best_ch_dir = os.path.join(checkpoints_dir, 'models', '_'.join(map(str, self.best_params)))
+        self.test_loss, self.test_accuracy, test_time = self.test_results(best_ch_dir)
+        self.total_time += time.time() - start_time + test_time
 

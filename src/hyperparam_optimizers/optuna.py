@@ -24,27 +24,21 @@ class OptunaOptimizer(HyperparamOptimizer):
         ]
         ch_dir = os.path.join(checkpoints_dir, 'models', '_'.join(map(str, params)))
 
-        # getting training time
-        train_time = self.checkpoint_train_time(ch_dir, i_epoch)
+        # getting training time and quality
+        val_loss, val_accuracy, train_time = self.checkpoint_train_time_and_quality(ch_dir, i_epoch)
         # if we've already checked this point
         if params in self.params_track:
             train_time = 0
         self.total_time += train_time
-        
-        test_loss, test_accuracy, test_time = self.test_results(ch_dir, i_epoch)
-        if test_loss is None and test_accuracy is None and test_time is None:
+
+        self.params_track.append(params)
+        self.loss_track.append(val_loss)
+        self.accuracy_track.append(val_accuracy)
+
+        if val_loss is None and val_accuracy is None:
             return 0
         
-        # if we've already checked this point
-        if params in self.params_track:
-            test_time = 0
-            
-        self.params_track.append(params)
-        self.loss_track.append(test_loss)
-        self.accuracy_track.append(test_accuracy)
-        self.total_time += test_time
-
-        return test_accuracy       
+        return val_accuracy       
 
     def optimize(self, checkpoints_dir, params_grid, i_epoch):
         start_time = time.time()
@@ -59,5 +53,7 @@ class OptunaOptimizer(HyperparamOptimizer):
         self.best_loss = self.loss_track[best_trial_id]
         self.best_params = self.params_track[best_trial_id]
 
-        self.total_time += time.time() - start_time
+        best_ch_dir = os.path.join(checkpoints_dir, 'models', '_'.join(map(str, self.best_params)))
+        self.test_loss, self.test_accuracy, test_time = self.test_results(best_ch_dir)
+        self.total_time += time.time() - start_time + test_time
 
