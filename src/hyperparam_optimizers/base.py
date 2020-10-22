@@ -19,6 +19,7 @@ class HyperparamOptimizer(object):
         self.total_time = 0
         self.loss_track = []
         self.accuracy_track = []
+        self.best_accuracy_track = []
         self.params_track = []
         self.n_iters = 0
         
@@ -76,13 +77,12 @@ class HyperparamOptimizer(object):
             self.loss_track.append(val_loss)
             self.accuracy_track.append(val_accuracy)
             
-            if val_loss is None and val_accuracy is None:
-                continue
-
-            if val_accuracy > self.best_accuracy:
-                self.best_loss = val_loss
-                self.best_accuracy = val_accuracy
-                self.best_params = params
+            if val_loss is not None and val_accuracy is not None:
+                if val_accuracy > self.best_accuracy:
+                    self.best_loss = val_loss
+                    self.best_accuracy = val_accuracy
+                    self.best_params = params
+            self.best_accuracy_track.append(self.best_accuracy)
 
         best_ch_dir = os.path.join(checkpoints_dir, 'models', '_'.join(map(str, self.best_params)))
         self.test_loss, self.test_accuracy, test_time = self.test_results(best_ch_dir)

@@ -35,10 +35,16 @@ class OptunaOptimizer(HyperparamOptimizer):
         self.loss_track.append(val_loss)
         self.accuracy_track.append(val_accuracy)
 
-        if val_loss is None and val_accuracy is None:
-            return 0
-        
-        return val_accuracy       
+        if val_loss is not None and val_accuracy is not None:
+            if val_accuracy > self.best_accuracy:
+                self.best_loss = val_loss
+                self.best_accuracy = val_accuracy
+                self.best_params = params
+            result = val_accuracy
+        else: 
+            result = 0
+        self.best_accuracy_track.append(self.best_accuracy)
+        return result       
 
     def optimize(self, checkpoints_dir, params_grid, i_epoch):
         start_time = time.time()
@@ -50,7 +56,6 @@ class OptunaOptimizer(HyperparamOptimizer):
 
         best_trial_id = study.best_trial.number
         self.n_iters = len(study.trials)
-        self.best_accuracy = study.best_trial.value
         self.best_loss = self.loss_track[best_trial_id]
         self.best_params = self.params_track[best_trial_id]
 

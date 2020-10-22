@@ -36,16 +36,16 @@ class SkoptOptimizer(HyperparamOptimizer):
         self.loss_track.append(val_loss)
         self.accuracy_track.append(val_accuracy)
         
-        if val_loss is None and val_accuracy is None:
-            return 100
-        
-        if val_accuracy > self.best_accuracy:
-            self.best_loss = val_loss
-            self.best_accuracy = val_accuracy
-            self.best_params = params
-            
-        return 1 - val_accuracy
-
+        if val_loss is not None and val_accuracy is not None:
+            if val_accuracy > self.best_accuracy:
+                self.best_loss = val_loss
+                self.best_accuracy = val_accuracy
+                self.best_params = params
+            result = 1 - val_accuracy
+        else:
+            result = 100
+        self.best_accuracy_track.append(self.best_accuracy)
+        return result
 
     def optimize(self, checkpoints_dir, params_grid, i_epoch):
         start_time = time.time()
