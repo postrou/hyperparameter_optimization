@@ -10,9 +10,10 @@ from .base import HyperparamOptimizer
 
 class SkoptOptimizer(HyperparamOptimizer):
     
-    def __init__(self, max_iters):
+    def __init__(self, max_iters, acq_func):
         super().__init__()
         self.max_iters = max_iters
+        self.acq_func = acq_func
     
     def objective(self, checkpoints_dir, i_epoch, params):
         self.n_iters += 1
@@ -59,7 +60,7 @@ class SkoptOptimizer(HyperparamOptimizer):
         ]
         
         obj = partial(self.objective, checkpoints_dir, i_epoch)
-        res_gp = gp_minimize(obj, space, n_calls=self.max_iters, acq_func='EI', random_state=42)
+        res_gp = gp_minimize(obj, space, n_calls=self.max_iters, acq_func=self.acq_func, random_state=42)
 
         best_ch_dir = os.path.join(checkpoints_dir, 'models', '_'.join(map(str, self.best_params)))
         self.test_loss, self.test_accuracy, test_time = self.test_results(best_ch_dir)
