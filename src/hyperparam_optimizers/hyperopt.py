@@ -79,6 +79,7 @@ class HyperoptOptimizer(HyperparamOptimizer):
         for t in trials.results:
             val_accuracy = 1 - t['loss'] if t['loss'] is not None else None
             self.total_time += t['train_time']
+            self.train_time_track.append(self.total_time)
             self.loss_track.append(t['cross_entropy'])
             self.accuracy_track.append(val_accuracy)
                 

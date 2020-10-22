@@ -30,6 +30,7 @@ class OptunaOptimizer(HyperparamOptimizer):
         if params in self.params_track:
             train_time = 0
         self.total_time += train_time
+        self.train_time_track.append(self.total_time)
 
         self.params_track.append(params)
         self.loss_track.append(val_loss)

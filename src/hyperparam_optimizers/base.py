@@ -17,6 +17,7 @@ class HyperparamOptimizer(object):
         self.test_accuracy = 0
         self.test_loss = 100
         self.total_time = 0
+        self.train_time_track = []
         self.loss_track = []
         self.accuracy_track = []
         self.best_accuracy_track = []
@@ -71,6 +72,7 @@ class HyperparamOptimizer(object):
             if params in self.params_track:
                 train_time = 0
             self.total_time += train_time
+            self.train_time_track.append(self.total_time)
 
             # keeping track of results
             self.params_track.append(params)
