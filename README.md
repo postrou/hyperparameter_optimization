@@ -1,6 +1,6 @@
 # Hyperparameter optimization
 
-Code for habr article on hyperparameter optimization methods review. Also I considered hyperopt, skopt and optuna frameworks on sentiment-analysis NLP task.
+Code for habr article on hyperparameter optimization methods review. In this article I also considered [hyperopt](https://github.com/hyperopt/hyperopt), [skopt](https://scikit-optimize.github.io/stable/) and [optuna](https://github.com/optuna/optuna) frameworks on sentiment-analysis NLP task.
 
 ## Data
 [Large Movie Review Dataset](https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz)
