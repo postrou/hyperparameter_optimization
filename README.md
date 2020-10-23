@@ -31,6 +31,12 @@ params_grid = {
 
 ## Results:
 
-
+| Optimizer | hidden_size | num_layers | bidirectional | batch_size | lr | Val loss | Val accuracy | Test accuracy | Time (s) |
+| GridSearch | 256 | 2 | + | 256 | 0.01 | 0.63 | 0.906 | 0.897 | 130357 |
+| RandomSearch | 256 | 2 | + | 256 | 0.01 | 0.63 | 0.906 | 0.897 | 78777 |
+| hyperopt | 256 | 2 | + | 256 | 0.01 | 0.63 | 0.906 | 0.897 | 68920 |
+| scikit-optimize (LCB) | 256 | 2 | + | 256 | 0.01 | 0.63 | 0.906 | 0.897 | 73423 |
+| scikit-optimize (gp_hedge) | 64 | 2 | + | 256 | 0.01 | 0.69 | 0.904 | 0.900 | 61869 |
+| optuna | 256 | 2 | + | 256 | 0.01 | 0.63 | 0.906 | 0.897 | 40681 |
 
 ## How to reproduce:
