@@ -45,4 +45,4 @@ In my experiments I used python==3.6.6. Needed packages can be installed via `pi
 
 - If you want just to play with obtained train/val/test accuracies, losses and times, you need to unpack "Train and test results only" to your project directory. Then you may use hyperparams.ipynb.
 
-- If you want retrain all the models and run the whole pipeline, you need to unpack the dataset archive to 'data' in your project directory, unpack embeddings just to your project directory. Then run `python3 train_all.py <n_epochs> <device>`. When all the models will be trained, you may use hyperparams.ipynb.
+- If you want retrain all the models and run the whole pipeline, you need to unpack the dataset archive to 'data' in your project directory, and unpack embeddings to your project directory. Then run `python3 train_all.py <n_epochs> <device>`. When all the models will be trained, you may use hyperparams.ipynb.
